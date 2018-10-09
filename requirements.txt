@@ -1,2 +1,4 @@
 mpi4py
 flask
+requests
+click
