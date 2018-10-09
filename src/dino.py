@@ -1,101 +1,135 @@
-from flask import Flask, request, g, jsonify
+import requests
+import configparser
+import os
 import sqlite3
+import click
+from dinoserver import add_user
 
 
-DATABASE = 'users.db'
-app = Flask(__name__)
+def get_base_url():
+    """
+    Get base url
+    :return: server:port
+    """
+    dir_name = os.path.dirname(__file__)
+    config = configparser.ConfigParser()
+    config.read(os.path.join(dir_name, '../config.ini'))
+    return config['server']['ip']+":"+config['server']['port']
 
 
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-    return db
+def get_database():
+    """
+    Get database object
+    :return: database object
+    """
+    dir_name = os.path.dirname(__file__)
+    config = configparser.ConfigParser()
+    config.read(os.path.join(dir_name, '../config.ini'))
+    return sqlite3.connect(config['database']['db'])
 
 
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
+def get_data(url, params=None, method=0):
+    """
+    get data from a url
+    :param url: url
+    :param params: parameters
+    :param method: 0=GET, 1=POST
+    :return: json data, status code
+    """
+    url = "http://" + url
+    r = None
+    if method == 0:
+        try:
+            r = requests.get(url, params)
+        except Exception as e:
+            return {'error': str(e)}, 400
+    elif method == 1:
+        try:
+            r = requests.post(url, params)
+        except Exception as e:
+            return {'error': str(e)}, 400
+    else:
+        return r
+    return r.text, r.status_code
 
 
 def get_users_list():
-    with app.app_context():
-        cur = get_db().cursor()
-        cur.execute('SELECT ip FROM USERS')
-        rows = cur.fetchall()
-        return list(rows)
-
-
-def add_user(user_ip):
-    conn = None
-    msg = ""
-    users = get_users_list()
-    if (user_ip,) in users:
-        msg = "%s: already connected!" % user_ip
-        return msg
-    try:
-        with app.app_context():
-            conn = get_db()
-            cur = conn.cursor()
-            cur.execute('INSERT INTO USERS (ip) VALUES (?)', (user_ip,))
-            conn.commit()
-            msg = "%s: connected" % user_ip
-    except:
-        conn.rollback()
-        msg = "%s: error inserting" % user_ip
-    finally:
-        return msg
+    """
+    :return: get users list
+    """
+    return get_data(get_base_url())
 
 
 def remove_user(user_ip):
-    conn = None
+    """
+    Removes a user from the database
+    :param user_ip: ip of the user
+    :return: message
+    """
+    db = None
     msg = ""
     users = get_users_list()
+
     if (user_ip,) not in users:
         msg = "%s: not connected!" % user_ip
         return msg
     try:
-        with app.app_context():
-            conn = get_db()
-            cur = conn.cursor()
-            cur.execute('DELETE FROM USERS WHERE IP = (?)', (user_ip,))
-            conn.commit()
-            msg = "%s: left" % user_ip
-    except:
-        conn.rollback()
-        msg = "%s: error deleting" % user_ip
+        db = get_database()
+        cur = db.cursor()
+        cur.execute('DELETE FROM USERS WHERE IP = (?)', (user_ip,))
+        db.commit()
+        msg = "%s: left" % user_ip
+    except Exception as e:
+        db.rollback()
+        msg = "%s: error deleting\n%s" % (user_ip, str(e))
     finally:
+        db.close()
         return msg
 
 
-@app.route("/")
-def hello():
-    return "dino is running..."
+def check_server():
+    """
+    Check if the server is up
+    :return:
+    """
+    data, status = get_data(get_base_url())
+    if status == 200:
+        return True
+    return False
 
 
-@app.route("/join")
-def join():
-    if 'ip' not in request.args:
-        return 'missing parameter: [ip]'
-    ip = request.args['ip']
-    return add_user(ip)
+@click.group()
+def cli():
+    """Command line for dino"""
+    pass
 
 
-@app.route("/remove")
-def remove():
-    if 'ip' not in request.args:
-        return 'missing parameter: [ip]'
-    ip = request.args['ip']
-    return remove_user(ip)
-
-
-@app.route("/get-users")
-def get_users():
-    users = get_users_list()
-    return jsonify(users)
+@cli.command()
+def init():
+    """Initialize the network and login"""
+    """
+    Logging in requires the following:
+        1. Tell every node that you are here
+        2. Update your own host file
+        3. Exchange keys with new nodes
+    """
+    if not check_server():
+        click.echo("Dino server is not running currently.")
+        click.echo("Start the server and retry.")
+        return
+    # ping everyone
+    for i in range(0, 256):
+        my_ip, port = get_base_url().split(":")
+        new_url = ".".join(my_ip.split('.')[0:3]) + "." + str(i) + ":" + port
+        if new_url == get_base_url():
+            continue
+        data, status = get_data(new_url+"/join")
+        if data:
+            click.echo(data)
+        if status == 201:
+            # active node
+            add_user(new_url)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5321)
+    cli()
