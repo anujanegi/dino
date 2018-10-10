@@ -126,9 +126,9 @@ def init():
         if new_url == get_base_url():
             continue
         data, status = get_data(new_url+"/join")
-        if status == 201:
+        if status in (201, 304):
             # active node
-            add_user(new_url)
+            add_user(new_url.split(":")[0])
 
 
 @cli.command()

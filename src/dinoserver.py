@@ -3,8 +3,12 @@ import configparser
 from flask import Flask, request, g, jsonify
 import sqlite3
 
-DATABASE = None
 app = Flask(__name__)
+dir_name = os.path.dirname(__file__)
+config = configparser.ConfigParser()
+config.read(os.path.join(dir_name, '../config.ini'))
+port = int(config['server']['port'])
+DATABASE = config['database']['db']
 
 
 def get_db():
@@ -87,10 +91,5 @@ def join():
 
 
 if __name__ == "__main__":
-    dir_name = os.path.dirname(__file__)
-    config = configparser.ConfigParser()
-    config.read(os.path.join(dir_name, '../config.ini'))
-    port = int(config['server']['port'])
-    DATABASE = config['database']['db']
     print("DINO server starting on port %d" % port)
     app.run(host="0.0.0.0", port=port)
