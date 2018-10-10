@@ -3,6 +3,7 @@ import configparser
 import os
 import sqlite3
 import click
+import re
 from dinoserver import add_user
 
 
@@ -40,7 +41,7 @@ def get_data(url, params=None, method=0):
     r = None
     if method == 0:
         try:
-            r = requests.get(url, params)
+            r = requests.get(url, params, timeout=0.1)
         except Exception as e:
             return {'error': str(e)}, 400
     elif method == 1:
@@ -57,7 +58,8 @@ def get_users_list():
     """
     :return: get users list
     """
-    return get_data(get_base_url())
+    users, _ = get_data(get_base_url())
+    return re.findall(r'"\s*([^"]*?)\s*"', users)
 
 
 def remove_user(user_ip):
@@ -70,7 +72,7 @@ def remove_user(user_ip):
     msg = ""
     users = get_users_list()
 
-    if (user_ip,) not in users:
+    if user_ip not in users:
         msg = "%s: not connected!" % user_ip
         return msg
     try:
@@ -124,11 +126,27 @@ def init():
         if new_url == get_base_url():
             continue
         data, status = get_data(new_url+"/join")
-        if data:
-            click.echo(data)
         if status == 201:
             # active node
             add_user(new_url)
+
+
+@cli.command()
+def listall():
+    """Print the list of IPs connected"""
+    users = get_users_list()
+    click.echo("Total IPs connected: %d" % len(users))
+    for user in users:
+        click.echo(user)
+
+
+@cli.command()
+def reset():
+    """Reset the connected users"""
+    users = get_users_list()
+    for user in users:
+        click.echo(remove_user(user))
+    click.echo("Reset successful.")
 
 
 if __name__ == "__main__":
