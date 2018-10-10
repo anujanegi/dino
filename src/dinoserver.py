@@ -82,6 +82,7 @@ def hello():
 def join():
     ip = request.remote_addr
     msg, status = add_user(ip)
+    print(ip)
     return jsonify({'message': msg}), status
 
 
