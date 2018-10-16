@@ -54,6 +54,9 @@ def add_user(user_ip):
     """
     conn = None
     users = get_users_list()
+    if user_ip == "127.0.0.1":
+        msg = "localhost calls are ignored!"
+        return msg, 304
     if (user_ip,) in users:
         msg = "%s: already connected!" % user_ip
         return msg, 304
