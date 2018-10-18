@@ -1,6 +1,7 @@
 import os
 import configparser
 from flask import Flask, request, g, jsonify
+from werkzeug.utils import secure_filename
 import sqlite3
 
 app = Flask(__name__)
@@ -9,6 +10,7 @@ config = configparser.ConfigParser()
 config.read(os.path.join(dir_name, '../config.ini'))
 port = int(config['server']['port'])
 DATABASE = config['database']['db']
+FILEPATH = config['files']['path']
 
 
 def get_db():
@@ -23,10 +25,10 @@ def get_db():
 
 
 @app.teardown_appcontext
-def close_connection(exception):
+def close_connection(_):
     """
     Close connection after use
-    :param exception: to be ignored
+    :param _: exception to be ignored
     :return: None
     """
     db = getattr(g, '_database', None)
@@ -90,6 +92,21 @@ def join():
     ip = request.remote_addr
     msg, status = add_user(ip)
     print(ip)
+    return jsonify({'message': msg}), status
+
+
+@app.route("/upload", methods=['POST'])
+def upload():
+    print(request.form)
+    if request.method == 'POST' and 'file' in request.files:
+        file = request.files['file']
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(FILEPATH, filename))
+        msg = "file uploaded"
+        status = 200
+    else:
+        msg = 'file not found'
+        status = 500
     return jsonify({'message': msg}), status
 
 

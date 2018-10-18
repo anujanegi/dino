@@ -2,3 +2,5 @@
 venv/
 src/users.db
 src/__pycache__
+files/
+users.db
