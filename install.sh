@@ -113,9 +113,9 @@ copy_files(){
 
 # Creates symbolic link
 create_symbolic_link(){
-  $SUDO mkdir $HOME/mpiuser/dino
-  $SUDO mkdir $HOME/mpiuser/dino
-  $SUDO cp -r * $HOME/mpiuser/dino
+  $SUDO mkdir /home/mpiuser/dino
+  $SUDO mkdir /home/mpiuser/dino
+  $SUDO cp -r * /home/mpiuser/dino
 }
 
 # Instals packages and python dependencies
@@ -136,7 +136,7 @@ check_mpich2
 # Check and create MPI user if does not exist
 create_user
 # Login user
-login_user
+# login_user
 # Copy DiNo files
 copy_files
 # Create symbolic links
