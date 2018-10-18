@@ -3,7 +3,7 @@
 # DiNo cli installer
 
 # Base Variables
-SUDO = "sudo"
+SUDO="sudo"
 MPI_USER="mpiuser"
 MPI_PASS="password"
 
@@ -113,7 +113,9 @@ copy_files(){
 
 # Creates symbolic link
 create_symbolic_link(){
-  
+  $SUDO mkdir $HOME/mpiuser/dino
+  $SUDO mkdir $HOME/mpiuser/dino
+  $SUDO cp -r * $HOME/mpiuser/dino
 }
 
 # Instals packages and python dependencies
