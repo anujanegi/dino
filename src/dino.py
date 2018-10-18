@@ -149,5 +149,18 @@ def reset():
     click.echo("Reset successful.")
 
 
+@cli.command()
+def mpirun():
+    """Run MPI files"""
+    users = get_users_list()
+    user_string = ",".join(users)
+    dir_name = os.path.dirname(__file__)
+    config = configparser.ConfigParser()
+    config.read(os.path.join(dir_name, '../config.ini'))
+    command = "mpirun.openmpi -np %d -H %s,%s python3 /home/mpiuser/dino/files/test.py" % (len(users)+1, config['server']['ip'], user_string)
+    print(command)
+    os.system(command)
+
+
 if __name__ == "__main__":
     cli()
