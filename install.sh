@@ -106,9 +106,9 @@ create_keys(){
 
 # Copies DiNo files
 copy_files(){
-  mkdir ~/home/mpiuser/DiNo
-  cp /src/* ~/home/mpiuser/DiNo
-  cp config.ini ~/home/mpiuser/DiNo
+  $SUDO mkdir /home/mpiuser/dino
+  $SUDO mkdir /home/mpiuser/dino
+  $SUDO cp -r * /home/mpiuser/dino
 }
 
 # Creates symbolic link
@@ -140,7 +140,7 @@ create_user
 # Copy DiNo files
 copy_files
 # Create symbolic links
-create_symbolic_link
+# create_symbolic_link
 # Install packages
 run_and_log install_packages "Installing packages $packages" "Something went wrong, please look at the log file"
 # Create ssh keys
