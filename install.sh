@@ -55,7 +55,7 @@ run_and_log(){
 
 # Installs mpi
 install_mpi(){
-  wget -P pwd https://download.open-mpi.org/release/open-mpi/v2.1/openmpi-2.1.1.tar.gz
+  wget -P https://download.open-mpi.org/release/open-mpi/v2.1/openmpi-2.1.1.tar.gz
   tar -xzf openmpi-2.1.1.tar.gz
   cd openmpi-2.1.1
   $SUDO ./configure --prefix=/usr/local
@@ -140,4 +140,4 @@ run_and_log install_packages "Installing packages $packages" "Something went wro
 # Create ssh keys
 create_keys
 # Setting up NFS
-setup_cloud
+# setup_cloud
