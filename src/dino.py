@@ -6,6 +6,7 @@ import sqlite3
 import click
 import tempfile
 from parser import parse
+from werkzeug.utils import secure_filename
 from dinoserver import add_user, remove_user
 
 
@@ -141,7 +142,8 @@ def mpirun(filename):
     print("Compiling...")
     tfile = tempfile.NamedTemporaryFile('w+', delete=False)
     tfile.write(parse(filename))
-    print("File saved as: %s" % tfile.name)
+    filepath = os.path.join(config['fileserver']['path'], secure_filename(filename))
+    print("File saved as: %s" % filepath)
     # synchronize
     print("Synchronizing...")
     upload_dict = {'file': (tfile.name, parse(filename), '', {'Expires': '0'})}
@@ -153,7 +155,7 @@ def mpirun(filename):
     # run
     print("Running...")
     user_string = ",".join(users)
-    command = "mpirun.openmpi -np %d -H %s python3 %s" % (len(users), user_string, tfile.name)
+    command = "mpirun -np %d --hosts %s python3 %s" % (len(users), user_string, filepath)
     print(command)
     output = subprocess.check_output(command, shell=True)
     print(output)
