@@ -1,6 +1,3 @@
-from mpi4py import MPI
-import numpy as np
-
 def parsum(t, data):
     t = comm.bcast(t, root=0)
     data = comm.bcast(data, root=0)
@@ -14,7 +11,7 @@ def parsum(t, data):
         for x in range(len(recvbuf)):
             partial_sum += recvbuf[x]
 
-        print(partial_sum)
+        # print(partial_sum)
         value = np.array(partial_sum, 'd')
 
         sum = np.array(0.0, 'd')

@@ -65,6 +65,9 @@ def add_user(user_ip):
     if (user_ip,) in users:
         msg = "%s: already connected!" % user_ip
         return msg, 304
+    if user_ip == config['server']['ip']:
+        msg = "cannot add self"
+        return msg, 500
     with app.app_context():
         try:
             conn = get_db()
