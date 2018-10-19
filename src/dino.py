@@ -165,7 +165,7 @@ def mpirun(filename):
     config.read(os.path.join(dir_name, '../config.ini'))
     # create temp file
     print("Compiling...")
-    tfile = tempfile.NamedTemporaryFile('w+',delete=False)
+    tfile = tempfile.NamedTemporaryFile('w+', delete=False)
     tfile.write(parse(filename))
     # synchronize
     print("Synchronizing...")
@@ -177,7 +177,7 @@ def mpirun(filename):
     tfile.close()
     # run
     user_string = ",".join(users)
-    command = "mpirun.openmpi -np %d -H %s python3 %s" % (len(users)+1, user_string, tfile.name)
+    command = "mpirun.openmpi -np %d -H %s python3 %s" % (len(users)    , user_string, tfile.name)
     print(command)
     os.system(command)
 
