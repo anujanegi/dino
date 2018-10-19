@@ -3,7 +3,6 @@ import configparser
 import os
 import sqlite3
 import click
-import re
 import tempfile
 from parser import parse
 from dinoserver import add_user, remove_user
@@ -63,6 +62,7 @@ def get_users_list():
     cur = get_database().cursor()
     cur.execute('SELECT ip FROM USERS')
     rows = cur.fetchall()
+    rows = [row[0] for row in rows]
     return list(rows)
 
 
@@ -109,7 +109,7 @@ def init():
             # active node
             add_user(new_url.split(":")[0])
             counter += 1
-    print("Scan complete. Found %d nodes." % counter)
+    print("Scan complete. Found %d node(s)." % counter)
 
 
 @cli.command()
@@ -118,7 +118,7 @@ def listall():
     users = get_users_list()
     click.echo("Total IPs connected: %d" % len(users))
     for user in users:
-        click.echo(user[0])
+        click.echo(user)
 
 
 @cli.command()
@@ -142,6 +142,7 @@ def mpirun(filename):
     print("Compiling...")
     tfile = tempfile.NamedTemporaryFile('w+', delete=False)
     tfile.write(parse(filename))
+    print("File saved as: %s" % tfile.name)
     # synchronize
     print("Synchronizing...")
     upload_dict = {'file': ('temp.py', tfile, '', {'Expires': '0'})}
@@ -151,6 +152,7 @@ def mpirun(filename):
         requests.post("http://%s:5321/upload" % user, files=upload_dict)
     tfile.close()
     # run
+    print("Running...")
     user_string = ",".join(users)
     command = "mpirun.openmpi -np %d -H %s python3 %s" % (len(users), user_string, tfile.name)
     print(command)

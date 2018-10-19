@@ -48,6 +48,7 @@ def get_users_list():
         cur = get_db().cursor()
         cur.execute('SELECT ip FROM USERS')
         rows = cur.fetchall()
+        rows = [row[0] for row in rows]
         return list(rows)
 
 
@@ -96,7 +97,7 @@ def remove_user(user_ip):
         try:
             conn = get_db()
             cur = conn.cursor()
-            cur.execute('DELETE FROM USERS WHERE IP = (?)', (user_ip[0],))
+            cur.execute('DELETE FROM USERS WHERE IP = (?)', (user_ip,))
             conn.commit()
             msg = "%s: left" % user_ip
         except Exception as e:
@@ -115,7 +116,7 @@ def poll():
         time.sleep(2)
         users = get_users_list()
         for user in users:
-            url = "http://" + user[0] + ":" + config['server']['port']
+            url = "http://" + user + ":" + config['server']['port']
             try:
                 requests.get(url, [], timeout=0.1)
             except Exception as e:
