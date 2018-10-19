@@ -97,7 +97,6 @@ def join():
 
 @app.route("/upload", methods=['POST'])
 def upload():
-    print(request.form)
     if request.method == 'POST' and 'file' in request.files:
         file = request.files['file']
         filename = secure_filename(file.filename)
