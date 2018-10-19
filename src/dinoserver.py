@@ -111,6 +111,7 @@ def poll():
     """
     Polls the current users and check if they are available
     """
+    user_counter = {}
     while True:
         time.sleep(2)
         users = get_users_list()
@@ -145,8 +146,8 @@ def join():
 def upload():
     if request.method == 'POST' and 'file' in request.files:
         file = request.files['file']
-        path, filename = file.filename.split('/')
-        file.save(os.path.join(path, secure_filename(filename)))
+        path, filename = file.filename[1:].split('/')
+        file.save(os.path.join('/'+path, secure_filename(filename)))
         msg = "file uploaded"
         status = 200
     else:
