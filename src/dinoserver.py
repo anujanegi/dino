@@ -114,13 +114,19 @@ def poll():
     user_counter = {}
     while True:
         time.sleep(2)
+        user_counter = {}
         users = get_users_list()
         for user in users:
-            url = "http://" + user + ":" + config['server']['port']
+            if not user_counter.get(user):
+                user_counter[user] = 0
+            url = "http://" + user + ":" + config['server']['port'] + "/join"
             try:
                 requests.get(url, [], timeout=0.1)
             except Exception as e:
+                user_counter[user] += 1
+            if user_counter[user] > 3:
                 print(remove_user(user))
+                user_counter[user] = 0
 
 
 """
