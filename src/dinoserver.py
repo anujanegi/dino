@@ -13,7 +13,6 @@ config = configparser.ConfigParser()
 config.read(os.path.join(dir_name, '../config.ini'))
 port = int(config['server']['port'])
 DATABASE = config['database']['db']
-FILEPATH = config['files']['path']
 
 
 def get_db():
@@ -146,8 +145,8 @@ def join():
 def upload():
     if request.method == 'POST' and 'file' in request.files:
         file = request.files['file']
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(FILEPATH, filename))
+        path, filename = file.filename.split('/')
+        file.save(os.path.join(path, secure_filename(filename)))
         msg = "file uploaded"
         status = 200
     else:
