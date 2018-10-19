@@ -4,6 +4,8 @@ import os
 import sqlite3
 import click
 import re
+import tempfile
+from parser import parse
 from dinoserver import add_user
 
 
@@ -120,6 +122,8 @@ def init():
         click.echo("Start the server and retry.")
         return
     # ping everyone
+    print("Scanning network...")
+    counter = 0
     for i in range(0, 256):
         my_ip, port = get_base_url().split(":")
         new_url = ".".join(my_ip.split('.')[0:3]) + "." + str(i) + ":" + port
@@ -129,6 +133,8 @@ def init():
         if status in (201, 304):
             # active node
             add_user(new_url.split(":")[0])
+            counter += 1
+    print("Scan complete. Found %d nodes." % counter)
 
 
 @cli.command()
@@ -150,14 +156,28 @@ def reset():
 
 
 @cli.command()
-def mpirun():
+@click.argument('filename')
+def mpirun(filename):
     """Run MPI files"""
-    users = get_users_list()
-    user_string = ",".join(users)
+    # configure
     dir_name = os.path.dirname(__file__)
     config = configparser.ConfigParser()
     config.read(os.path.join(dir_name, '../config.ini'))
-    command = "mpirun.openmpi -np %d -H %s,%s python3 /home/mpiuser/dino/files/test.py" % (len(users)+1, config['server']['ip'], user_string)
+    # create temp file
+    print("Compiling...")
+    tfile = tempfile.NamedTemporaryFile('w+',delete=False)
+    tfile.write(parse(filename))
+    # synchronize
+    print("Synchronizing...")
+    upload_dict = {'file': ('temp.py', tfile, '', {'Expires': '0'})}
+    users = get_users_list()
+    users.append(config['server']['ip'])
+    for user in users:
+        requests.post("http://%s:5321/upload" % user, files=upload_dict)
+    tfile.close()
+    # run
+    user_string = ",".join(users)
+    command = "mpirun.openmpi -np %d -H %s python3 %s" % (len(users)+1, user_string, tfile.name)
     print(command)
     os.system(command)
 
