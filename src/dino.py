@@ -103,10 +103,8 @@ def init():
     for i in range(0, 256):
         my_ip, port = get_base_url().split(":")
         new_url = ".".join(my_ip.split('.')[0:3]) + "." + str(i) + ":" + port
-        if new_url == get_base_url():
-            continue
         data, status = get_data(new_url+"/join")
-        if status not in (201, 304):
+        if status in (201, 304):
             # active node
             add_user(new_url.split(":")[0])
             counter += 1

@@ -142,7 +142,10 @@ def hello():
 
 @app.route("/join")
 def join():
-    ip = request.remote_addr
+    if request.headers.getlist("X-Forwarded-For"):
+        ip = request.headers.getlist("X-Forwarded-For")[0]
+    else:
+        ip = request.remote_addr
     msg, status = add_user(ip)
     print(ip)
     return jsonify({'message': msg}), status
