@@ -1,6 +1,7 @@
 import requests
 import configparser
 import os
+import subprocess
 import sqlite3
 import click
 import tempfile
@@ -156,7 +157,8 @@ def mpirun(filename):
     user_string = ",".join(users)
     command = "mpirun.openmpi -np %d -H %s python3 %s" % (len(users), user_string, tfile.name)
     print(command)
-    os.system(command)
+    output = subprocess.check_output(command, shell=True)
+    print(output)
 
 
 if __name__ == "__main__":
