@@ -6,7 +6,7 @@ import click
 import re
 import tempfile
 from parser import parse
-from dinoserver import add_user
+from dinoserver import add_user, remove_user
 
 
 def get_base_url():
@@ -60,35 +60,10 @@ def get_users_list():
     """
     :return: get users list
     """
-    users, _ = get_data(get_base_url())
-    return re.findall(r'"\s*([^"]*?)\s*"', users)
-
-
-def remove_user(user_ip):
-    """
-    Removes a user from the database
-    :param user_ip: ip of the user
-    :return: message
-    """
-    db = None
-    msg = ""
-    users = get_users_list()
-
-    if user_ip not in users:
-        msg = "%s: not connected!" % user_ip
-        return msg
-    try:
-        db = get_database()
-        cur = db.cursor()
-        cur.execute('DELETE FROM USERS WHERE IP = (?)', (user_ip,))
-        db.commit()
-        msg = "%s: left" % user_ip
-    except Exception as e:
-        db.rollback()
-        msg = "%s: error deleting\n%s" % (user_ip, str(e))
-    finally:
-        db.close()
-        return msg
+    cur = get_database().cursor()
+    cur.execute('SELECT ip FROM USERS')
+    rows = cur.fetchall()
+    return list(rows)
 
 
 def check_server():
@@ -143,7 +118,7 @@ def listall():
     users = get_users_list()
     click.echo("Total IPs connected: %d" % len(users))
     for user in users:
-        click.echo(user)
+        click.echo(user[0])
 
 
 @cli.command()
@@ -177,7 +152,7 @@ def mpirun(filename):
     tfile.close()
     # run
     user_string = ",".join(users)
-    command = "mpirun.openmpi -np %d -H %s python3 %s" % (len(users)    , user_string, tfile.name)
+    command = "mpirun.openmpi -np %d -H %s python3 %s" % (len(users), user_string, tfile.name)
     print(command)
     os.system(command)
 
