@@ -3,6 +3,9 @@ import configparser
 from flask import Flask, request, g, jsonify
 from werkzeug.utils import secure_filename
 import sqlite3
+import threading
+import time
+import requests
 
 app = Flask(__name__)
 dir_name = os.path.dirname(__file__)
@@ -62,18 +65,61 @@ def add_user(user_ip):
     if (user_ip,) in users:
         msg = "%s: already connected!" % user_ip
         return msg, 304
-    try:
-        with app.app_context():
+    with app.app_context():
+        try:
             conn = get_db()
             cur = conn.cursor()
             cur.execute('INSERT INTO USERS (ip) VALUES (?)', (user_ip,))
             conn.commit()
             msg = "%s: connected" % user_ip
             return msg, 201
-    except Exception as e:
-        conn.rollback()
-        msg = "%s: error inserting\n%s" % (user_ip, str(e))
-        return msg, 500
+        except Exception as e:
+            conn.rollback()
+            msg = "%s: error inserting\n%s" % (user_ip, str(e))
+            return msg, 500
+
+
+def remove_user(user_ip):
+    """
+    Removes a user from the database
+    :param user_ip: ip of the user
+    :return: message
+    """
+    conn = None
+    msg = ""
+    users = get_users_list()
+
+    if user_ip not in users:
+        msg = "%s: not connected!" % user_ip
+        return msg
+    with app.app_context():
+        try:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute('DELETE FROM USERS WHERE IP = (?)', (user_ip[0],))
+            conn.commit()
+            msg = "%s: left" % user_ip
+        except Exception as e:
+            conn.rollback()
+            msg = "%s: error deleting\n%s" % (user_ip, str(e))
+        finally:
+            conn.close()
+            return msg
+
+
+def poll():
+    """
+    Polls the current users and check if they are available
+    """
+    while True:
+        time.sleep(2)
+        users = get_users_list()
+        for user in users:
+            url = "http://" + user[0] + ":" + config['server']['port']
+            try:
+                requests.get(url, [], timeout=0.1)
+            except Exception as e:
+                print(remove_user(user))
 
 
 """
@@ -111,4 +157,6 @@ def upload():
 
 if __name__ == "__main__":
     print("DINO server starting on port %d" % port)
+    poller = threading.Thread(target=poll)
+    poller.start()
     app.run(host="0.0.0.0", port=port)
