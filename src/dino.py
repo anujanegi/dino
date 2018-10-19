@@ -142,7 +142,7 @@ def mpirun(filename):
     print("Compiling...")
     tfile = tempfile.NamedTemporaryFile('w+', delete=False)
     tfile.write(parse(filename))
-    filepath = os.path.join(config['fileserver']['path'], secure_filename(filename))
+    filepath = os.path.join(config['fileserver']['path'], secure_filename(tfile.name))
     print("File saved as: %s" % filepath)
     # synchronize
     print("Synchronizing...")
