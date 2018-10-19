@@ -106,7 +106,7 @@ def init():
         if new_url == get_base_url():
             continue
         data, status = get_data(new_url+"/join")
-        if status not in (500):
+        if status != 500:
             # active node
             add_user(new_url.split(":")[0])
             counter += 1
