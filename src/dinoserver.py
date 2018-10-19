@@ -158,8 +158,8 @@ def join():
 def upload():
     if request.method == 'POST' and 'file' in request.files:
         file = request.files['file']
-        path, filename = file.filename[1:].split('/')
-        file.save(os.path.join('/'+path, secure_filename(filename)))
+        filename = file.filename.split('/')[-1]
+        file.save(os.path.join(config['fileserver']['path'], secure_filename(filename)))
         msg = "file uploaded"
         status = 200
     else:

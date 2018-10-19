@@ -144,11 +144,11 @@ def mpirun(filename):
     print("File saved as: %s" % tfile.name)
     # synchronize
     print("Synchronizing...")
-    upload_dict = {'file': (tfile.name, tfile, '', {'Expires': '0'})}
+    upload_dict = {'file': (tfile.name, parse(filename), '', {'Expires': '0'})}
     users = get_users_list()
+    users.append(config['server']['ip'])
     for user in users:
         requests.post("http://%s:5321/upload" % user, files=upload_dict)
-    users.append(config['server']['ip'])
     tfile.close()
     # run
     print("Running...")
