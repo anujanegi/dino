@@ -1,7 +1,7 @@
 import os
 import re
 
-FUNCTIONS = ['matmul', 'matvec', 'parsum']
+FUNCTIONS = ['matmul', 'matvec', 'parsum', 'hello']
 
 
 def get_filename(old_name):
@@ -20,6 +20,7 @@ rank = comm.Get_rank()
 size = comm.Get_size()\n\n
 """
     """
+    top_block
     if rank == 0:
         top_if_block
     else:
@@ -37,14 +38,14 @@ size = comm.Get_size()\n\n
         data = file.readlines()
         for line in data:
             line = line.split('#')[0]   # exclude pound comments
-            for function in FUNCTIONS:
-                if function+'(' in line:
+            for func in FUNCTIONS:
+                if func + '(' in line:
                     # add function snippet to code
-                    with open(get_filename('../lib/'+function+'.py'), 'r') as ffile:
-                        final_code+=ffile.read()
-                    final_code+="\n\n"
+                    with open(get_filename('../lib/'+func+'.py'), 'r') as ffile:
+                        final_code += ffile.read()
+                    final_code += "\n\n"
                     global_block.append(line)
-                    match_obj = re.search(r'%s\((.*)\)' % function, line)
+                    match_obj = re.search(r'%s\((.+)\)' % func, line)
                     if match_obj:
                         params = match_obj.group(1).split(',')
                         for param in params:
@@ -65,7 +66,8 @@ size = comm.Get_size()\n\n
         if top_if_block:
             final_code += """if rank == 0:\n"""
             for line in top_if_block:
-                final_code += "\t" + line
+                if line not in global_block:
+                    final_code += "\t" + line
         if else_block:
             final_code += """else:\n"""
             for line in else_block:
