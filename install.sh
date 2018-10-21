@@ -57,7 +57,7 @@ run_and_log(){
 install_mpich2(){
   wget -P http://www.mpich.org/static/downloads/3.2.1/mpich-3.2.1.tar.gz
   tar -xzf mpich-3.2.1.tar.gz
-  cd mpich2-1.4
+  cd mpich-3.2.1
   ./configure --disable-fortran
   make; $SUDO make install
 }
