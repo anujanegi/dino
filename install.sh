@@ -55,7 +55,7 @@ run_and_log(){
 
 # Installs mpich2
 install_mpich2(){
-  wget -P pwd http://www.mpich.org/static/downloads/3.2.1/mpich-3.2.1.tar.gz
+  wget -P http://www.mpich.org/static/downloads/3.2.1/mpich-3.2.1.tar.gz
   tar -xzf mpich-3.2.1.tar.gz
   cd mpich2-1.4
   ./configure --disable-fortran
