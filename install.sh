@@ -53,13 +53,13 @@ run_and_log(){
   [[ $exit_ ]] && { echo -e "\t -> ${_log_def} $3";  exit; }
 }
 
-# Installs mpi
-install_mpi(){
-  wget -P https://download.open-mpi.org/release/open-mpi/v2.1/openmpi-2.1.1.tar.gz
-  tar -xzf openmpi-2.1.1.tar.gz
-  cd openmpi-2.1.1
-  $SUDO ./configure --prefix=/usr/local
-  $SUDO make all install
+# Installs mpich2
+install_mpich2(){
+  wget -P pwd http://www.mpich.org/static/downloads/3.2.1/mpich-3.2.1.tar.gz
+  tar -xzf mpich2-1.4.tar.gz
+  cd mpich2-1.4
+  ./configure --disable-fortran
+  make; $SUDO make install
 }
 
 
@@ -125,8 +125,8 @@ echo "Logging enabled on ${LOG}"
 print_head
 # Check permissions and distro
 check_viability
-# Check if mpich2 installed
-install_mpi
+# Install mpich2
+install_mpich2
 # Check and create MPI user if does not exist
 create_user
 # Login user
