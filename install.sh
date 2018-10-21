@@ -56,7 +56,7 @@ run_and_log(){
 # Installs mpich2
 install_mpich2(){
   wget -P pwd http://www.mpich.org/static/downloads/3.2.1/mpich-3.2.1.tar.gz
-  tar -xzf mpich2-1.4.tar.gz
+  tar -xzf mpich-3.2.1.tar.gz
   cd mpich2-1.4
   ./configure --disable-fortran
   make; $SUDO make install
@@ -77,7 +77,7 @@ create_user(){
 
 # Logs in MPI_USER
 login_user(){
-  su - $MPI_USER
+  su $MPI_USER
   return 0
 }
 
@@ -100,7 +100,6 @@ create_keys(){
 
 # Copies DiNo files
 copy_files(){
-  $SUDO mkdir /home/mpiuser/dino
   $SUDO mkdir /home/mpiuser/dino
   $SUDO cp -r * /home/mpiuser/dino
 }
