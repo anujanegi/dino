@@ -146,14 +146,17 @@ def mpirun(filename):
     content = parse(filename)
     file.write(content)
     file.close()
+    print("File saved at %s" % filepath)
     # synchronize
     print("Synchronizing...")
     upload_dict = {'file': (new_filename, content, '', {'Expires': '0'})}
     users = get_users_list()
+    print("Sending to", users)
     for user in users:
         requests.post("http://%s:5321/upload" % user, files=upload_dict)
     # run
     print("Running...")
+    users.append(config['server']['ip'])
     user_string = ",".join(users)
     command = "mpirun -np %d --hosts %s python3 %s" % (len(users), user_string, filepath)
     print(command)

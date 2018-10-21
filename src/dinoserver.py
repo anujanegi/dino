@@ -171,5 +171,5 @@ def upload():
 if __name__ == "__main__":
     print("DINO server starting on port %d" % port)
     poller = threading.Thread(target=poll)
-    poller.start()
+    # poller.start()
     app.run(host="0.0.0.0", port=port)
