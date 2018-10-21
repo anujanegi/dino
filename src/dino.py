@@ -4,9 +4,9 @@ import os
 import subprocess
 import sqlite3
 import click
-import tempfile
+import random
+import string
 from parser import parse
-from werkzeug.utils import secure_filename
 from dinoserver import add_user, remove_user
 
 
@@ -140,18 +140,18 @@ def mpirun(filename):
     config.read(os.path.join(dir_name, '../config.ini'))
     # create temp file
     print("Compiling...")
-    tfile = tempfile.NamedTemporaryFile('w+', delete=False)
-    tfile.write(parse(filename))
-    filepath = os.path.join(config['fileserver']['path'], secure_filename(tfile.name))
-    print("File saved as: %s" % filepath)
+    new_filename = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    filepath = os.path.join(config['fileserver']['path'], new_filename)
+    file = open(filepath, 'w')
+    content = parse(filename)
+    file.write(content)
+    file.close()
     # synchronize
     print("Synchronizing...")
-    upload_dict = {'file': (tfile.name, parse(filename), '', {'Expires': '0'})}
+    upload_dict = {'file': (new_filename, content, '', {'Expires': '0'})}
     users = get_users_list()
-    users.append(config['server']['ip'])
     for user in users:
         requests.post("http://%s:5321/upload" % user, files=upload_dict)
-    tfile.close()
     # run
     print("Running...")
     user_string = ",".join(users)
